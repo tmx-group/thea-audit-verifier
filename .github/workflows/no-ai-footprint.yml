@@ -1,0 +1,8 @@
+name: no-ai-footprint
+on: [pull_request]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: "! git grep -lEI \"(Co-Authored-By: (Claude|ChatGPT|Copilot))\" -- . || (echo AI footprint found && exit 1)"
