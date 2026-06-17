@@ -1,0 +1,43 @@
+{
+  "name": "@tmx-group/audit-verifier",
+  "version": "1.0.0",
+  "description": "Standalone, zero-dependency verifier for Thea API hash-chained audit receipts. Independently confirms an answer happened and has not been altered — no trust in the API required.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "src/verify.js",
+  "exports": {
+    ".": "./src/verify.js"
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "test": "node test/verify.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tmx-group/thea-audit-verifier.git"
+  },
+  "homepage": "https://github.com/tmx-group/thea-audit-verifier#readme",
+  "bugs": {
+    "url": "https://github.com/tmx-group/thea-audit-verifier/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "audit",
+    "hash-chain",
+    "verifier",
+    "tamper-evident",
+    "receipt",
+    "thea"
+  ]
+}
