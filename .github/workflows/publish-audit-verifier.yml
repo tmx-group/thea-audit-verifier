@@ -1,0 +1,38 @@
+name: Publish @tmx-group/audit-verifier
+
+# Publishes @tmx-group/audit-verifier to npm with provenance.
+# Triggered by a version tag, e.g.  git tag v1.0.0 && git push --tags
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # REQUIRED for npm provenance (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'        # npm >= 9.5 ships with provenance support
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Test
+        run: npm test
+
+      - name: Dry-run publish (validate package contents)
+        run: npm publish --provenance --access public --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish
+        run: npm publish --provenance --access public
+        env:
+          # npm automation token (packages read-write), set as the NPM_TOKEN
+          # repository secret.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
