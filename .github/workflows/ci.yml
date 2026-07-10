@@ -1,0 +1,18 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ci.yml · THEA-30 · baseline CI caller (provisioned to every repo by this module)
+# Calls the shared reusable workflow hosted in thea-infrastructure.
+# Branch model = TMX-STD-002 (dev → staging → production).
+# ──────────────────────────────────────────────────────────────────────────────
+name: ci
+
+on:
+  pull_request:
+    branches: [dev, staging, production]
+  push:
+    branches: [dev, staging]
+
+jobs:
+  ci:
+    uses: tmx-group/thea-infrastructure/.github/workflows/ci-base.yml@main
+    with:
+      node-version: "20"
