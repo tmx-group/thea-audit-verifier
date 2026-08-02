@@ -2,6 +2,18 @@
 # ci.yml · THEA-30 · baseline CI caller (provisioned to every repo by this module)
 # Calls the shared reusable workflow hosted in thea-infrastructure.
 # Branch model = TMX-STD-002 (dev → staging → production).
+#
+# ⚠ THIS FILE IS THE SOURCE OF TRUTH. It is written over the repo's copy on every
+# apply, so a job added directly to a repo's .github/workflows/ci.yml is deleted
+# the next time this module runs — silently, in a commit titled "Add baseline CI
+# workflow [skip ci]".
+#
+# That is not hypothetical: INFRA-54. On 2026-08-02 an apply deleted INFRA-40's
+# `migrate-dryrun` job from BOTH thea-mothership (a9f2e0e) and thea-api (9c0370f)
+# — 16 lines each — because the job lived only in the repo copies. The gate had
+# caught a real migration collision hours earlier. Nothing reported its removal.
+#
+# So: a CI job that must survive belongs HERE, not in a repo.
 # ──────────────────────────────────────────────────────────────────────────────
 name: ci
 
