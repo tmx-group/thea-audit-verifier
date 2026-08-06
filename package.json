@@ -1,24 +1,38 @@
 {
   "name": "@tmx-group/audit-verifier",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Standalone, zero-dependency verifier for Thea API hash-chained audit receipts. Independently confirms an answer happened and has not been altered — no trust in the API required.",
   "license": "Apache-2.0",
   "type": "module",
-  "main": "src/verify.js",
   "exports": {
-    ".": "./src/verify.js"
+    ".": {
+      "types": "./dist/verify.d.ts",
+      "import": "./dist/verify.js",
+      "require": "./dist/verify.cjs"
+    }
   },
+  "main": "./dist/verify.cjs",
+  "types": "./dist/verify.d.ts",
   "files": [
-    "src/",
+    "dist",
     "README.md",
     "LICENSE",
     "NOTICE"
   ],
   "scripts": {
-    "test": "node test/verify.test.mjs"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "gen:spec": "cp ../thea-api/packages/audit-verifier/SPEC.md SPEC.md",
+    "test": "vitest run"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
   },
   "repository": {
     "type": "git",
@@ -38,6 +52,7 @@
     "verifier",
     "tamper-evident",
     "receipt",
-    "thea"
+    "thea",
+    "typescript"
   ]
 }
