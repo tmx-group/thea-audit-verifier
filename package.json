@@ -1,6 +1,6 @@
 {
   "name": "@tmx-group/audit-verifier",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Standalone, zero-dependency verifier for Thea API hash-chained audit receipts. Independently confirms an answer happened and has not been altered — no trust in the API required.",
   "license": "Apache-2.0",
   "type": "module",
@@ -12,7 +12,8 @@
     "src/",
     "README.md",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "SPEC.md"
   ],
   "scripts": {
     "test": "node test/verify.test.mjs"
