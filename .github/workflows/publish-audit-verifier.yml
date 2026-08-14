@@ -1,7 +1,27 @@
 name: Publish @tmx-group/audit-verifier
 
 # Publishes @tmx-group/audit-verifier to npm with provenance.
-# Triggered by a version tag, e.g.  git tag v1.0.0 && git push --tags
+# Triggered by a version tag, e.g.  git tag v2.0.0 && git push --tags
+#
+# ⚠ THIS WORKFLOW PUBLISHED NOTHING USABLE BEFORE THEA-222.
+#
+# It was written for the 1.0.0 JS package, which had `main: src/verify.js` and
+# no build. THEA-222 ported the package to TypeScript — `main` is now
+# `./dist/verify.cjs` and `files` is `["dist", …]` — but this file was not
+# updated with it. On a clean checkout, which is what a runner has:
+#
+#   npm test              → vitest: command not found   (no `npm ci`)
+#   npm pack --dry-run    → 4 entries: LICENSE, NOTICE, README.md, package.json
+#
+# No code at all, with `main` pointing into a `dist/` that is gitignored and
+# never built. The test step failing is the only thing that stopped a hollow
+# tarball reaching the registry — the guard was an accident, not a design.
+#
+# So: install, build, then assert the built artifacts are actually in the
+# tarball BEFORE publishing, while the failure is still cheap. This is the
+# package a customer runs to verify their own audit chain; shipping it empty
+# would be discovered by them, not by us.
+
 on:
   push:
     tags:
@@ -22,8 +42,46 @@ jobs:
           node-version: '20'        # npm >= 9.5 ships with provenance support
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Test
         run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # The tag is the release decision, so a mismatch between it and the
+      # manifest means one of the two is wrong. Fail rather than guess.
+      - name: Guard — tag must match the package version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/v}"
+          PKG=$(node -p "require('./package.json').version")
+          [ "$TAG" = "$PKG" ] || { echo "::error::tag v$TAG != package.json $PKG"; exit 1; }
+
+      - name: Guard — the tarball must contain the built package
+        run: |
+          set -euo pipefail
+          for f in dist/verify.js dist/verify.cjs dist/verify.d.ts; do
+            [ -s "$f" ] || { echo "::error::$f missing or empty — the build did not run"; exit 1; }
+          done
+          npm pack --dry-run --json > /tmp/pack.json
+          node -e '
+            const p = require("/tmp/pack.json")[0];
+            const paths = p.files.map(f => f.path);
+            const need = ["dist/verify.js","dist/verify.cjs","dist/verify.d.ts","LICENSE","NOTICE"];
+            const missing = need.filter(n => !paths.includes(n));
+            if (missing.length) {
+              console.error("::error::tarball is missing " + missing.join(", "));
+              process.exit(1);
+            }
+            console.log("pack: " + p.entryCount + " entries, all required files present");
+          '
 
       - name: Dry-run publish (validate package contents)
         run: npm publish --provenance --access public --dry-run
@@ -36,3 +94,16 @@ jobs:
           # npm automation token (packages read-write), set as the NPM_TOKEN
           # repository secret.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # `npm publish` reporting success is not the registry serving it.
+      - name: Confirm the registry serves it
+        run: |
+          set -euo pipefail
+          V=$(node -p "require('./package.json').version")
+          for i in 1 2 3 4 5; do
+            FOUND=$(npm view "@tmx-group/audit-verifier@$V" version 2>/dev/null || true)
+            [ "$FOUND" = "$V" ] && { echo "published @tmx-group/audit-verifier@$V" >> "$GITHUB_STEP_SUMMARY"; exit 0; }
+            sleep 10
+          done
+          echo "::error::publish reported success but the registry does not serve $V"
+          exit 1
