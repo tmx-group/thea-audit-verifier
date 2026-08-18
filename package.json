@@ -13,8 +13,12 @@
   },
   "main": "./dist/verify.cjs",
   "types": "./dist/verify.d.ts",
+  "bin": {
+    "audit-verifier": "./dist/cli.js"
+  },
   "files": [
     "dist",
+    "examples",
     "README.md",
     "LICENSE",
     "NOTICE"
