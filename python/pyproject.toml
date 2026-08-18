@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "thea-audit-verifier"
+version = "2.0.0"
+description = "Standalone, zero-dependency verifier for Thea API hash-chained audit receipts"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+dependencies = []
+keywords = ["audit", "hash-chain", "verifier", "tamper-evident", "receipt", "thea"]
+
+[project.urls]
+Homepage = "https://github.com/tmx-group/thea-audit-verifier-py"
+Repository = "https://github.com/tmx-group/thea-audit-verifier-py"
+Issues = "https://github.com/tmx-group/thea-audit-verifier-py/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/thea_audit_verifier"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

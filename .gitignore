@@ -1,6 +1,12 @@
 .DS_Store
 node_modules/
 dist/
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+python/.pytest_cache/
+python/.venv/
 .env
 *.local
 # AI tooling artefacts (TMX-AI-001)
