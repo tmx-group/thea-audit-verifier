@@ -34,7 +34,7 @@ Given the rows of a workspace's audit chain, the verifier:
 - confirms `idx` is contiguous and monotonic from 0 (no inserted, removed, or
   reordered rows);
 - rejects chains that mix more than one `workspace_id`;
-- reports the **first break**, with the offending `idx` and reason.
+- reports **all breaks**, each with the offending `idx` and reason.
 
 ## CLI usage
 
@@ -113,8 +113,9 @@ audit-verifier verify node_modules/@tmx-group/audit-verifier/examples/chain-brok
 import { verifyChain, verifyReceipt } from '@tmx-group/audit-verifier';
 
 // `rows` is the full audit chain for one workspace, each row shaped:
-// { workspace_id, idx, prev_hash, query, route_summary,
-//   atom_refs, tier, latency_ms, ts, hash }
+// { workspace_id, idx, prev_hash, hash,
+//   canonical? /* THEA-314+ rows: verbatim preimage; pass this if present */,
+//   query?, route_summary?, atom_refs?, tier?, latency_ms?, ts? /* legacy only */ }
 const result = verifyChain(rows);
 
 if (result.ok) {
@@ -140,10 +141,14 @@ const r = verifyReceipt(receipt, chainRows);
 
 ### `verifyChain(rows, opts?)`
 
-Returns `{ ok, rows_checked, head_hash, breaks }`. `breaks` is an array of
-`{ idx, reason, expected?, got? }`; `reason` is one of `hash_mismatch`,
-`broken_link`, `idx_discontinuity`, or `multiple_workspaces`. Pass
-`{ stopOnFirstBreak: true }` to stop walking at the first failure.
+Returns `{ ok, rows_checked, workspace_id, head_hash, breaks, legacy_unverifiable }`.
+`breaks` is an array of `{ idx, reason, expected?, got? }`; `reason` is one of
+`hash_mismatch`, `broken_link`, `idx_discontinuity`, or `multiple_workspaces`.
+`legacy_unverifiable` lists indices of rows without a `canonical` preimage — their
+chain links were checked but their per-row hash was not recomputed.
+
+Pass `opts.anchor = { idx, prev_hash }` to verify a contiguous slice rather than a
+full chain starting at genesis.
 
 ### `verifyReceipt(receipt, chainRows)`
 
